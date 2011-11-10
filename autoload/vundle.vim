@@ -32,6 +32,7 @@ sign define Vu_active   text=>  texthl=Comment
 sign define Vu_todate   text=.  texthl=Comment
 sign define Vu_updated  text=+  texthl=Comment
 sign define Vu_deleted  text=-  texthl=Comment
+sign define Vu_static   text=s  texthl=Comment
 endif
 
 

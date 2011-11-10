@@ -109,6 +109,10 @@ func! s:bundle.command()
   return printf("Bundle '%s'", self.spec)
 endf
 
+func! s:bundle.is_static()
+  return get(self, 'static')
+endf
+
 " ---------------------------------------------------------------------------
 
 

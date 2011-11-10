@@ -59,6 +59,8 @@ func! vundle#installer#run(func_name, name, ...) abort
     echo n.' already installed'
   elseif 'deleted' == status
     echo n.' deleted'
+  elseif 'static' == status
+    echo n.' static'
   elseif 'error' == status
     echohl Error
     echo 'Error processing '.n
@@ -194,6 +196,11 @@ func! s:helptags(rtp) abort
 endf
 
 func! s:sync(bang, bundle) abort
+  " Do not sync if this is a static bundle
+  if a:bundle.is_static()
+    return 'static'
+  endif
+
   let git_dir = expand(a:bundle.path().'/.git/')
   if isdirectory(git_dir)
     if !(a:bang) | return 'todate' | endif
