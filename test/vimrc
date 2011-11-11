@@ -1,9 +1,14 @@
 " vim -u test/vimrc
 set nocompatible
+let test_dir = '/tmp/vundle_test'
+let root = test_dir . '/bundles'
+let local_repo = test_dir . '/localrepo'
+let src = 'http://github.com/gmarik/vundle.git'
 
-let root = '/tmp/vundle_bundles/'
-let src = 'http://github.com/gmarik/vundle.git' 
-" let src = '~/.vim/bundle/vundle/.git' 
+if !isdirectory(expand(local_repo) . '/.git')
+  call mkdir(expand(local_repo) . '/.git', 'p')
+  exec '!git init '. expand(local_repo)
+endif
 
 if !isdirectory(expand(root).'/vundle')
   exec '!git clone '.src.' '.root.'/vundle'
@@ -37,14 +42,13 @@ Bundle 'nonexistinguser/yupppierepo.git'
 " full uri
 Bundle 'https://github.com/vim-scripts/vim-game-of-life'
 " full uri
-Bundle 'git@github.com:gmarik/ingretu.git'
+" Bundle 'git@github.com:gmarik/ingretu.git'
 " short uri
 Bundle 'gh:gmarik/snipmate.vim.git'
 Bundle 'github:mattn/gist-vim.git'
 
 " local uri stuff
-Bundle '~/Dropbox/.gitrepos/utilz.vim.git'
-" Bundle 'file://Dropbox/.gitrepos/utilz.vim.git'
+Bundle expand(local_repo) . '/.git'
 
 " with options
 Bundle 'rstacruz/sparkup.git', {'rtp': 'vim/'}
@@ -52,19 +56,42 @@ Bundle 'rstacruz/sparkup.git', {'rtp': 'vim/'}
 " Camel case
 Bundle 'vim-scripts/RubySinatra'
 
+" Static bundle: Same name as a valid vim-scripts bundle
+Bundle 'latte', {'static' : 1}
+if !isdirectory(expand(root) . '/latte')
+  call mkdir(expand(root) . '/latte', 'p')
+endif
+
+
 filetype plugin indent on      " Automatically detect file types.
 
 set wildignore+=doc              " should not break helptags
 set wildignore+=.git             " should not break clone
 
-BundleInstall
 
 func! s:assert_bundles() abort
-  for b in g:bundles
-    if (!isdirectory(b.path().'/.git/'))
-      throw b.name.' not installed'
+  let rtp = split(&rtp, ',')
+  let expected_failures = ['yupppierepo', 'ingretu']
+  for b in g:bundles.get_sorted_list()
+    echo 'Checking bundle '. b.name
+    if (index(expected_failures, b.name) != -1)
+      continue
+    endif
+    if (b.is_static() && isdirectory(b.path().'/.git/'))
+      throw "Static bundle " . b.name . " was synced"
+    endif
+    if (!b.is_static()) && (!isdirectory(b.path().'/.git/'))
+      throw b.name.' not installed (' . b.path() . ')'
+    endif
+    if (index(rtp, b.rtpath()) == -1)
+      throw b.name.' not in runtimepath (' . b.rtpath() . ')'
     endif
   endfor
+  echo "All tests passed"
 endf
 
-call s:assert_bundles()
+
+com! AssertBundles call s:assert_bundles()
+
+BundleInstall
+AssertBundles
