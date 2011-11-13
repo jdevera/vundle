@@ -235,7 +235,11 @@ func! s:system(cmd) abort
   return system(a:cmd)
 endf
 
-func! s:log(str) abort
-  call add(g:vundle_log, '['.strftime("%y%m%d %T").'] '.a:str)
-  return a:str
+func! s:log(entry) abort
+  let lines = split(a:entry, '\n')
+  if len(lines) == 0 | let lines=[''] | endif
+  for line in lines
+    call add(g:vundle_log, '['.strftime("%Y-%m-%d %T").'] '.line)
+  endfor
+  return a:entry
 endf
